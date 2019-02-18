@@ -1,0 +1,13 @@
+  - name: Install docker-ce
+    apt:
+      name: docker.io
+      state: latest
+      update_cache: yes
+    notify: "docker restart"
+
+  - name: Copy config file
+    template:
+      src: templates/daemon.json.j2
+      dest: /etc/docker/daemon.json
+      mode: 0600
+    notify: "docker restart"

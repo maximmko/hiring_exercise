@@ -1,0 +1,7 @@
+- name: PLAYBOOK rsyslog
+  hosts: all
+  become: yes
+  become_user: root
+  roles:
+    - rsyslog_manage
+

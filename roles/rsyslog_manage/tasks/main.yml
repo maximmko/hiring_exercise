@@ -1,0 +1,23 @@
+  - name: Install rsyslog
+    apt:
+      name: rsyslog
+      state: latest
+      update_cache: yes
+
+  - name: Enable syslog to remote logging
+    lineinfile:
+      state: present
+      regexp: '(.*)@{1,2}\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b'
+      path: /etc/rsyslog.d/50-default.conf
+      line: '*.* @@{{ rsyslog_ip }}'
+    when: rsyslog_ip is defined
+    notify: "rsyslog restart"
+
+  - name: Enable custom logging to remote
+    template:
+      src: templates/60-logstoserver.conf.j2
+      dest: /etc/rsyslog.d/60-logstoserver.conf
+      mode: 0644
+    when:  custom_log_path is defined
+    notify: "rsyslog restart"
+

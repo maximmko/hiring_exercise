@@ -1,0 +1,64 @@
+#!/usr/bin/python
+
+import socket
+import sys
+import re
+import netaddr
+
+
+try:
+    destIP = sys.argv[1]
+except:
+    print("Please set ip or network number (in CIDR notation) as parameter\nExamples: scanner 10.16.110.2\n          scanner 10.60.110.0/24")
+    exit()
+
+if not re.match(r"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b",destIP):
+    print("Check IP or network address")
+    exit()
+
+def scanner(targetIP):
+#   The function returns tcp open ports on host as a list object
+    oPortList = []
+    try:
+        for port in range(1,9000):
+            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            result = sock.connect_ex((str(ip), port))
+            if result == 0:
+                oPortList.append(str(port))
+            sock.close()
+    except socket.error:
+        print "Couldn't connect to server"
+    return oPortList
+
+def output(targetIP, newPortList):
+#   Reade the previous results from file (the file name matches the ip address)
+    try:
+        with open(str(targetIP), "r") as resultFile:
+            prePortList = [line.strip() for line in resultFile]
+    except IOError:
+        prePortList = []
+
+#   Make output
+    if prePortList != newPortList:
+        print("*Target - {}: Full scan results:*".format(ip))
+        for r in newPortList:
+            print("Host: {}\tPorts: {}/open/tcp////".format(ip, r))
+    else:
+        print ("*Target - {}: No new records found in the last scan.*".format(ip))
+
+def savecurrent(targetIP, list):
+#   Write current results to file
+    if list:
+        with open(str(targetIP), "w") as resultFile:
+            for r in list:
+                resultFile.write(str(r) + '\n')
+    else:
+        pass
+
+
+ipList = netaddr.IPNetwork(destIP).iter_hosts()
+
+for ip in ipList:
+    portList = scanner(ip)
+    output(ip, portList)
+    savecurrent(ip, portList)

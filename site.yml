@@ -1,0 +1,7 @@
+- name: PLAYBOOK Install docker
+  hosts: all
+  become: yes
+  become_user: root
+  roles:
+    - install_docker
+
